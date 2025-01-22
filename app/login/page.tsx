@@ -1,7 +1,7 @@
 // Add the "use client" directive at the top of the file
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";  // Change to next/navigation
 
 export default function Login() {
@@ -9,6 +9,16 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const router = useRouter();
+
+   // Check if user is already logged in
+   useEffect(() => {
+    const token = localStorage.getItem("accessToken");
+    const refreshToken = localStorage.getItem("refreshToken");
+    if (token && refreshToken) {
+      // Redirect to profile if tokens exist
+      router.push("/profile");
+    }
+  }, [router]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

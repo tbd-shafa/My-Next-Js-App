@@ -10,7 +10,7 @@ export default function Profile() {
   const fetchUser = async () => {
     const token = localStorage.getItem("accessToken");
     if (!token) {
-        alert('No access token found');
+        alert('please login..');
         router.push("/login");
         return;
       }
