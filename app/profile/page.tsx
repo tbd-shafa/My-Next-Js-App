@@ -10,7 +10,8 @@ export default function Profile() {
   const fetchUser = async () => {
     const token = localStorage.getItem("accessToken");
     if (!token) {
-        setError('No access token found');
+        alert('No access token found');
+        router.push("/login");
         return;
       }
 
@@ -27,7 +28,7 @@ export default function Profile() {
         const data = await response.json();
         setUser(data);
       } else {
-        console.error("Failed to fetch user data.");
+        alert("Failed to fetch user data.");
         router.push("/login");
       }
     } catch (err) {
@@ -63,7 +64,12 @@ export default function Profile() {
       console.error("Failed to refresh token.");
     }
   };
-
+  const handleLogout = () => {
+    // Clear the tokens from localStorage
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    router.push("/login");
+  };
   useEffect(() => {
     fetchUser();
 
@@ -72,7 +78,8 @@ export default function Profile() {
   }, []);
 
   if (!user) {
-    return <p>Loading...</p>;
+     <p>Loading...</p>;
+    return;
   }
 
 
@@ -109,10 +116,18 @@ return (
             <strong className="text-gray-700">Gender:</strong>
             <span className="text-gray-600">{user.gender}</span>
           </div>
-        </div>
-      </div>
-    </div>
-  );
-}
+          </div>
 
+            <div className="mt-6 flex justify-center">
+            <button
+                onClick={handleLogout}
+                className="w-full py-3 rounded-lg bg-red-500 text-white font-semibold hover:bg-red-600 transition duration-200"
+            >
+                Logout
+            </button>
+            </div>
+            </div>
+            </div>
+            );
+        }
   
