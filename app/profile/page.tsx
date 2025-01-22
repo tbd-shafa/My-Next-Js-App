@@ -114,12 +114,5 @@ return (
     </div>
   );
 }
-// export default function Profile() {
-//     return (
-//       <div>
-//         <h1>PROFILE  page</h1>
-       
-//       </div>
-//     );
-//   }
+
   
