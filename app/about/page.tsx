@@ -1,6 +1,8 @@
-
+import Navbar from "@/components/Navbar";
   export default function About() {
     return (
+      <div className="min-h-screen bg-gray-50">
+            <Navbar />
       <div className="flex items-center justify-center min-h-screen bg-gray-100">
         <div className="bg-white shadow-lg rounded-lg p-8 max-w-3xl w-full">
           <h1 className="text-4xl font-bold text-center text-blue-600 mb-6">Meet Technobd</h1>
@@ -9,6 +11,7 @@
           </p>
          
         </div>
+      </div>
       </div>
     );
   }

@@ -2,18 +2,54 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Navbar from "@/components/Navbar";
 
 export default function Profile() {
   const [user, setUser] = useState<any>(null);
+  const [error, setError] = useState("");
   const router = useRouter();
 
-  const fetchUser = async () => {
-    const token = localStorage.getItem("accessToken");
-    if (!token) {
-        alert('please login..');
-        router.push("/login");
-        return;
+  const refreshToken = async () => {
+    const refreshToken = localStorage.getItem("refreshToken");
+    
+    if (!refreshToken) {
+      setError('No refresh token found');
+      router.push("/login");
+      return null;
+    }
+
+    try {
+      const response = await fetch("https://dummyjson.com/auth/refresh", {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          refreshToken: refreshToken,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        localStorage.setItem("accessToken", data.accessToken);
+        localStorage.setItem("refreshToken", data.refreshToken);
+        return data.accessToken;
+      } else {
+        throw new Error('Failed to refresh token');
       }
+    } catch (error) {
+      console.error('Error refreshing token:', error);
+      router.push("/login");
+      return null;
+    }
+  };
+
+  const fetchUser = async () => {
+    let token = localStorage.getItem("accessToken");
+    if (!token) {
+      router.push("/login");
+      return;
+    }
 
     try {
       const response = await fetch("https://dummyjson.com/auth/me", {
@@ -21,14 +57,28 @@ export default function Profile() {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-       // credentials: "include",
       });
 
-      if (response.ok) {
+      if (response.status === 401) {
+        const newToken = await refreshToken();
+        if (newToken) {
+          const retryResponse = await fetch("https://dummyjson.com/auth/me", {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${newToken}`,
+            },
+          });
+          if (retryResponse.ok) {
+            const data = await retryResponse.json();
+            setUser(data);
+            return;
+          }
+        }
+        router.push("/login");
+      } else if (response.ok) {
         const data = await response.json();
         setUser(data);
       } else {
-        //alert("Failed to fetch user data.");
         router.push("/login");
       }
     } catch (err) {
@@ -37,97 +87,79 @@ export default function Profile() {
     }
   };
 
-  const refreshToken = async () => {
-    const refreshToken = localStorage.getItem("refreshToken");
-    
-  
-    if (!refreshToken) {
-      setError('No refresh token found');
-      return;
-    }
-
-    try {
-      const response = await fetch("https://dummyjson.com/auth/refresh", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ refreshToken, expiresInMins: 30 }),
-        //credentials: "include",
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        localStorage.setItem("accessToken", data.accessToken);
-        localStorage.setItem("refreshToken", data.refreshToken);
-        alert('Session refreshed!');
-      }
-    } catch (err) {
-      console.error("Failed to refresh token.");
-    }
-  };
-  const handleLogout = () => {
-    // Clear the tokens from localStorage
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
-    router.push("/login");
-  };
   useEffect(() => {
     fetchUser();
-
-    const refreshInterval = setInterval(refreshToken, 30 * 60 * 1000); // Refresh token every 30 minutes
-    return () => clearInterval(refreshInterval);
   }, []);
 
-  if (!user) {
-     <p>Loading...</p>;
-    return;
-  }
+  if (!user) return (
+    <div className="min-h-screen bg-gray-100">
+      <Navbar />
+      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    </div>
+  );
 
-
-return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="bg-white shadow-md rounded-lg p-8 w-full max-w-md">
-        <h1 className="text-2xl font-bold text-center text-gray-800 mb-6">Profile</h1>
-        
-        <div className="flex justify-center mb-6">
-          <img
-            src={user.image}
-            alt={`${user.firstName} ${user.lastName}`}
-            className="rounded-full w-32 h-32 object-cover border-4 border-blue-500"
-          />
+  return (
+    <div className="min-h-screen bg-gray-100">
+      <Navbar />
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-white shadow-xl rounded-lg overflow-hidden">
+            <div className="bg-gradient-to-r from-blue-600 to-blue-800 px-6 py-8">
+              <div className="flex items-center">
+                <img
+                  src={user.image}
+                  alt={`${user.firstName} ${user.lastName}`}
+                  className="h-24 w-24 rounded-full border-4 border-white shadow-lg"
+                />
+                <div className="ml-6">
+                  <h1 className="text-3xl font-bold text-white">
+                    {user.firstName} {user.lastName}
+                  </h1>
+                  <p className="text-blue-100 mt-1">@{user.username}</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="px-6 py-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500">Email</h3>
+                    <p className="mt-1 text-lg font-medium text-gray-900">{user.email}</p>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500">Phone</h3>
+                    <p className="mt-1 text-lg font-medium text-gray-900">{user.phone}</p>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500">Gender</h3>
+                    <p className="mt-1 text-lg font-medium text-gray-900 capitalize">{user.gender}</p>
+                  </div>
+                </div>
+                
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500">Address</h3>
+                    <p className="mt-1 text-lg font-medium text-gray-900">
+                      {user.address?.address}, {user.address?.city}
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500">Company</h3>
+                    <p className="mt-1 text-lg font-medium text-gray-900">{user.company?.name}</p>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500">Department</h3>
+                    <p className="mt-1 text-lg font-medium text-gray-900">{user.company?.department}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-
-        <div className="space-y-4">
-          <div className="flex justify-between">
-            <strong className="text-gray-700">Name:</strong>
-            <span className="text-gray-600">{user.firstName} {user.lastName}</span>
-          </div>
-
-          <div className="flex justify-between">
-            <strong className="text-gray-700">Username:</strong>
-            <span className="text-gray-600">{user.username}</span>
-          </div>
-
-          <div className="flex justify-between">
-            <strong className="text-gray-700">Email:</strong>
-            <span className="text-gray-600">{user.email}</span>
-          </div>
-
-          <div className="flex justify-between">
-            <strong className="text-gray-700">Gender:</strong>
-            <span className="text-gray-600">{user.gender}</span>
-          </div>
-          </div>
-
-            <div className="mt-6 flex justify-center">
-            <button
-                onClick={handleLogout}
-                className="w-full py-3 rounded-lg bg-red-500 text-white font-semibold hover:bg-red-600 transition duration-200"
-            >
-                Logout
-            </button>
-            </div>
-            </div>
-            </div>
-            );
-        }
-  
+      </div>
+    </div>
+  );
+}
