@@ -12,12 +12,12 @@ export default function Login() {
 
    // Check if user is already logged in
    useEffect(() => {
-    const token = localStorage.getItem("accessToken");
-    const refreshToken = localStorage.getItem("refreshToken");
-    if (token && refreshToken) {
-      // Redirect to profile if tokens exist
-      router.push("/profile");
-    }
+    // const token = localStorage.getItem("accessToken");
+    // const refreshToken = localStorage.getItem("refreshToken");
+    // if (token && refreshToken) {
+    //   // Redirect to profile if tokens exist
+    //   router.push("/profile");
+    // }
   }, [router]);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -45,7 +45,7 @@ export default function Login() {
 
         // Successfully logged in, navigate to profile page
         router.push('/profile');
-        alert('Login successful!');
+        // alert('Login successful!');
       } else {
         setError(data.error || 'Invalid credentials');
       }

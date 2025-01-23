@@ -1,3 +1,25 @@
+
+// export default function Product() {
+//     return (
+//       <div>
+//         <h1>Products</h1>
+//         <p>Explore our range of amazing products crafted with precision and care.</p>
+//       </div>
+//     );
+//   }
+//   export default async function Product() {
+//     const data = await fetch('https://api.vercel.app/blog')
+//     const posts = await data.json()
+//     return (
+//       <ul>
+//         {posts.map((post) => (
+//           <li key={post.id}>{post.title}</li>
+//         ))}
+//       </ul>
+//     )
+//   }  
+
+
 "use client";
 
 import { useRouter } from "next/navigation"; // For navigation
@@ -37,57 +59,6 @@ export default function Product() {
     router.push(`/product/${productId}`); // Navigate to the product details page
   };
 
-  const handleAddProduct = () => {
-    const token = localStorage.getItem("accessToken");
-    const refreshToken = localStorage.getItem("refreshToken");
-
-    if (token && refreshToken) {
-      router.push("/product/add"); // Navigate to the add product page
-    } else {
-      alert("Please log in first to add a product.");
-    }
-  };
-
-  const handleUpdate = (productId: number) => {
-    const token = localStorage.getItem("accessToken");
-    const refreshToken = localStorage.getItem("refreshToken");
-  
-    if (token && refreshToken) {
-      router.push(`/product/update?id=${productId}`); // Navigate to the update product page
-    } else {
-      alert("Please log in first to update a product.");
-    }
-  };
-  const handleDelete = async (productId: number) => {
-    const token = localStorage.getItem("accessToken");
-    const refreshToken = localStorage.getItem("refreshToken");
-
-    if (token && refreshToken) {
-      const confirmed = window.confirm("Are you sure you want to delete this product?");
-      if (confirmed) {
-        try {
-          const response = await fetch(`https://dummyjson.com/products/${productId}`, {
-            method: "DELETE",
-          });
-          const data = await response.json();
-          if (data.isDeleted) {
-            alert(`Product with ID ${productId} was successfully deleted.`);
-            setProducts((prevProducts) =>
-              prevProducts.filter((product) => product.id !== productId)
-            );
-          } else {
-            alert("Failed to delete the product. Please try again.");
-          }
-        } catch (error) {
-          console.error("Error deleting product:", error);
-          alert("An error occurred while deleting the product.");
-        }
-      }
-    } else {
-      alert("Please log in first to delete a product.");
-    }
-  };
-
   if (loading) {
     return <p>Loading...</p>;
   }
@@ -95,12 +66,6 @@ export default function Product() {
   return (
     <div className="p-8">
       <h1 className="text-2xl font-bold mb-6">Products Table</h1>
-      <button
-        onClick={handleAddProduct}
-        className="px-4 py-2 bg-green-500 text-white rounded mb-4"
-      >
-        Add Product
-      </button>
       <table className="table-auto border-collapse border border-gray-300 w-full">
         <thead>
           <tr>
@@ -129,22 +94,7 @@ export default function Product() {
                 >
                   View
                 </button>
-                <button
-                  onClick={() => handleUpdate(product.id)}
-                  className="px-4 py-2 bg-yellow-500 text-white rounded"
-                >
-                  Update
-              </button>
-
-              <button
-                  onClick={() => handleDelete(product.id)}
-                  className="px-2 py-1 bg-red-500 text-white rounded"
-                >
-                  Delete
-                </button>
-
               </td>
-              
             </tr>
           ))}
         </tbody>
@@ -168,3 +118,7 @@ export default function Product() {
     </div>
   );
 }
+
+
+
+

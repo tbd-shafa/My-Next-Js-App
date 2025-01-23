@@ -28,7 +28,7 @@ export default function Profile() {
         const data = await response.json();
         setUser(data);
       } else {
-        alert("Failed to fetch user data.");
+        //alert("Failed to fetch user data.");
         router.push("/login");
       }
     } catch (err) {
