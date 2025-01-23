@@ -11,14 +11,14 @@ export default function Login() {
   const router = useRouter();
 
    // Check if user is already logged in
-   useEffect(() => {
+  // useEffect(() => {
     // const token = localStorage.getItem("accessToken");
     // const refreshToken = localStorage.getItem("refreshToken");
     // if (token && refreshToken) {
     //   // Redirect to profile if tokens exist
     //   router.push("/profile");
     // }
-  }, [router]);
+ // }, [router]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
